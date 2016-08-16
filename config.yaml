@@ -1,0 +1,9 @@
+instance: my-instance
+receiver:
+  Test1:
+    parser: Test
+    protocol: tcp
+    host: localhost
+    port: 777
+    timeout: 10
+

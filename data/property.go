@@ -4,7 +4,7 @@ import "receiver/data/values"
 
 type Property struct {
 	Id       uint16
-	Code     CodeIdentity
+	Code     CodeId
 	Type     values.DataType
 	ModuleId uint16
 }

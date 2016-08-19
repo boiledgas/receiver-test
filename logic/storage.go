@@ -13,10 +13,10 @@ type Buffer struct {
 
 type Storage struct {
 	BufferSize int32
-	Buffers    map[data.CodeIdentity]*Buffer // словарь буферов
+	Buffers    map[data.CodeId]*Buffer // словарь буферов
 }
 
-func (s *Storage) GetChan(code data.CodeIdentity) (ch chan []*data.Record) {
+func (s *Storage) GetChan(code data.CodeId) (ch chan []*data.Record) {
 	if _, ok := s.Buffers[code]; !ok {
 		s.Buffers[code] = &Buffer{Out: make(chan []*data.Record)}
 	}
@@ -26,13 +26,13 @@ func (s *Storage) GetChan(code data.CodeIdentity) (ch chan []*data.Record) {
 	return
 }
 
-func (s *Storage) Free(code data.CodeIdentity) {
+func (s *Storage) Free(code data.CodeId) {
 	if buf, ok := s.Buffers[code]; ok {
 		atomic.SwapInt32(&buf.Locked, 0)
 	}
 }
 
-func (s *Storage) Drain() (ch chan []*data.Record, code data.CodeIdentity, ok bool) {
+func (s *Storage) Drain() (ch chan []*data.Record, code data.CodeId, ok bool) {
 	var buf *Buffer
 	for code, buf = range s.Buffers {
 		if atomic.CompareAndSwapInt32(&buf.Locked, 0, 1) {

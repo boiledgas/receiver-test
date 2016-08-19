@@ -26,17 +26,17 @@ func main() {
 		log.Printf("updated: %v %v", conf.Id, conf.ETag)
 	}
 	repository := repository.Configuration{
-		Data: make(map[data.CodeIdentity]data.Configuration),
+		Data: make(map[data.CodeId]data.Configuration),
 	}
 	conf_cache = &cache.Configuration{
 		UpdateFunc: updateFunc,
 		Repository: &repository,
-		Cache:      make(map[data.CodeIdentity]data.Configuration),
+		Index:      make(map[data.CodeId]data.Configuration),
 	}
-	updateConfiguration := func(code data.CodeIdentity, pause time.Duration) {
+	updateConfiguration := func(code data.CodeId, pause time.Duration) {
 		conf := data.Configuration{}
 		for i := 0; i < 5; i ++ {
-			if err := conf_cache.Get(code, &conf); err != nil {
+			if err := conf_cache.GetByCode(code, &conf); err != nil {
 				log.Printf("find %v: %v", code, err)
 			} else {
 				break

@@ -8,12 +8,12 @@ import (
 	"receiver/cache"
 	"receiver/client"
 	"receiver/config"
+	"receiver/data"
 	"receiver/logic"
+	_ "receiver/parser"
 	"receiver/repository"
 	"sync"
 	"time"
-	"receiver/data"
-	_ "receiver/parser"
 )
 
 func Serve() {
@@ -44,7 +44,7 @@ func Serve() {
 	repository := repository.Configuration{}
 	repository.Init()
 	repository.TestData()
-	cache := &cache.Configuration{Repository: &repository, Cache: make(map[data.CodeIdentity]data.Configuration)}
+	cache := &cache.Configuration{Repository: &repository, Index: make(map[data.CodeId]data.ConfigurationId), Cache: make(map[data.ConfigurationId]data.Configuration)}
 	contextProvider := &logic.ContextProvider{Cache: cache}
 	cache.UpdateFunc = contextProvider.UpdateConfiguration
 

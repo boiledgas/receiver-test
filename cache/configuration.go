@@ -13,40 +13,77 @@ const BATCH_SIZE uint16 = 3
 type UpdateFunc func(data.Configuration)
 
 type Configuration struct {
-	sync.RWMutex
-	UpdateFunc UpdateFunc                               // функция обновления конфигурации при обновлении в кэше
-	Repository *repository.Configuration                //(надо вынести в микросервис работы с хранилищем)
-	Cache      map[data.CodeIdentity]data.Configuration // кэшированные конфигурации
+	sync.RWMutex                                             // mutex for cache
+	UpdateFunc   UpdateFunc                                  // function invoke than some configurations changed
+	Repository   *repository.Configuration                   // configuration repository
+	Index        map[data.CodeId]data.ConfigurationId        // configuration index by CodeIdentity
+	Cache        map[data.ConfigurationId]data.Configuration // configuration cache
 }
 
 // вызывать функцию обновления для всех устройств
-func (p *Configuration) Get(code data.CodeIdentity, configuration *data.Configuration) (err error) {
+func (p *Configuration) GetByCode(code data.CodeId, configuration *data.Configuration) (err error) {
 	p.RLock()
 	defer p.RUnlock()
 
-	if conf, ok := p.Cache[code]; !ok {
-		if err = p.Repository.FindByCode(code, configuration); err != nil {
+	if configurationId, ok := p.Index[code]; !ok {
+		if err = p.Repository.GetByCode(code, configuration); err != nil {
 			return
 		}
 		p.RUnlock()
 		defer p.RLock()
-		p.Lock()
-		defer p.Unlock()
-		p.Cache[code] = *configuration
+		p.put(configuration)
 	} else {
-		*configuration = conf
+		*configuration = p.Cache[configurationId]
 	}
 	return
 }
 
+func (c *Configuration) GetById(configurationId data.ConfigurationId, configuration *data.Configuration) (err error) {
+	c.RLock()
+	defer c.RUnlock()
+
+	var ok bool
+	if *configuration, ok = c.Cache[configurationId]; !ok {
+		if err = c.Repository.GetById(configurationId, configuration); err != nil {
+			return
+		}
+		c.RUnlock()
+		defer c.RLock()
+		c.put(configuration)
+	}
+	return
+}
+
+func (c *Configuration) put(configuration *data.Configuration) {
+	c.Lock()
+	defer c.Unlock()
+
+	existId := c.Index[configuration.Code]
+	if existId != configuration.Id {
+		c.Index[configuration.Code] = configuration.Id
+		delete(c.Cache, existId)
+	}
+	c.Cache[configuration.Id] = *configuration
+}
+
 func (c *Configuration) watch() {
-	defer time.AfterFunc(time.Second*1, c.watch)
+	var count uint16
+	defer func() {
+		if count == 0 {
+			time.AfterFunc(time.Second*1, c.watch)
+		} else {
+			go c.watch()
+		}
+	}()
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("[ERROR] watch: %v", err)
 		}
 	}()
-	c.ReloadCache()
+	var err error
+	if count, err = c.ReloadCache(); err != nil {
+		log.Printf("[ERROR] ReloadCache: %v", err)
+	}
 }
 
 func (c *Configuration) ReloadCache() (count uint16, err error) {
@@ -59,29 +96,26 @@ func (c *Configuration) ReloadCache() (count uint16, err error) {
 	//updates := make([]bool, BATCH_SIZE)
 	//keys []data.CodeIdentity, configurations []data.Configuration, updates []bool,
 
-	var keys [BATCH_SIZE]data.CodeIdentity
+	var keys [BATCH_SIZE]data.CodeId
 	var configurations [BATCH_SIZE]data.Configuration
 	var updates [BATCH_SIZE]bool
 	batchFunc := func(currentBatchSize uint16) {
-		if err := c.Repository.FindByCodes(keys[0:currentBatchSize], configurations[:]); err != nil {
-			heapErr := err
-			log.Printf("update Devices: %v", heapErr)
+		if err = c.Repository.GetByCodes(keys[0:currentBatchSize], configurations[:]); err != nil {
+			log.Printf("update Devices: %v", err)
 			return
 		}
 		for i, configuration := range configurations {
-			if w, ok := c.Cache[configuration.Code]; ok && w.ETag != configuration.ETag {
+			if w, ok := c.Cache[configuration.Id]; ok && w.ETag != configuration.ETag {
 				updates[i] = true
 			}
 		}
 		for i := 0; i < len(keys); i++ {
 			if code, ok := keys[i], updates[i]; ok {
-				if _, ok := c.Cache[code]; ok {
+				if _, ok := c.Index[code]; ok {
 					c.RUnlock()
-					c.Lock()
 					count++
-					c.Cache[code] = configurations[i]
-					c.UpdateFunc(c.Cache[code])
-					c.Unlock()
+					c.put(&configurations[i])
+					c.UpdateFunc(configurations[i])
 					c.RLock()
 				}
 			}
@@ -89,7 +123,7 @@ func (c *Configuration) ReloadCache() (count uint16, err error) {
 	}
 
 	var currentBatchSize uint16 = 0
-	for code, _ := range c.Cache {
+	for code, _ := range c.Index {
 		if currentBatchSize < BATCH_SIZE {
 			keys[currentBatchSize] = code
 			updates[currentBatchSize] = false

@@ -13,7 +13,6 @@ type Transmitter struct {
 	Parser   string // протокол кодирования данных
 	Protocol string // протокол передачи данных
 	Server   string // адрес назначения
-	Count    byte   // количество потоков передачи
 }
 
 type Service struct {

@@ -15,7 +15,7 @@ func TestConfiguration_Empty(t *testing.T) {
 	cache := Configuration{
 		UpdateFunc: updateFunc,
 		Repository: &repository,
-		Cache:      make(map[data.CodeIdentity]data.Configuration),
+		Index:      make(map[data.CodeId]data.Configuration),
 	}
 	cache.ReloadCache()
 
@@ -27,16 +27,16 @@ func TestConfiguration(t *testing.T) {
 		updatedId = conf.Id
 	}
 	repository := repository.Configuration{
-		Data: make(map[data.CodeIdentity]data.Configuration),
+		Data: make(map[data.CodeId]data.Configuration),
 	}
 	repository.TestData()
 	cache := Configuration{
 		UpdateFunc: updateFunc,
 		Repository: &repository,
-		Cache:      make(map[data.CodeIdentity]data.Configuration),
+		Index:      make(map[data.CodeId]data.Configuration),
 	}
 	var configuration data.Configuration
-	if err := cache.Get("test1", &configuration); err != nil {
+	if err := cache.GetByCode("test1", &configuration); err != nil {
 		t.Error(err)
 	}
 	if configuration.Id == nil {

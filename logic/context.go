@@ -8,8 +8,8 @@ import (
 )
 
 type Device interface {
-	Id(code data.CodeIdentity)
-	Value(moduleCode data.CodeIdentity, propertyCode data.CodeIdentity, time int64) (value interface{})
+	Id(code data.CodeId)
+	Value(moduleCode data.CodeId, propertyCode data.CodeId, time int64) (value interface{})
 }
 
 // Содержит конфигурацию устройства и обеспечивает отправку записей
@@ -32,11 +32,11 @@ type Context struct {
 	records map[int64]*data.Record // кэш записей для отправки
 }
 
-func (c *Context) Id(code data.CodeIdentity) {
+func (c *Context) Id(code data.CodeId) {
 	c.Provider.Register(code, c)
 }
 
-func (c *Context) Value(moduleCode data.CodeIdentity, propertyCode data.CodeIdentity, time int64) (value interface{}) {
+func (c *Context) Value(moduleCode data.CodeId, propertyCode data.CodeId, time int64) (value interface{}) {
 	if !c.init {
 		return
 	}

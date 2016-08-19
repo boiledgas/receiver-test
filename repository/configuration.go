@@ -8,13 +8,13 @@ import (
 
 type Configuration struct {
 	sync.RWMutex
-	Data map[data.CodeIdentity]data.Configuration
+	Data map[data.CodeId]data.Configuration
 }
 
 var increment uint64 = 1
 
 func (c *Configuration) Init() {
-	c.Data = make(map[data.CodeIdentity]data.Configuration)
+	c.Data = make(map[data.CodeId]data.Configuration)
 }
 
 func (c *Configuration) TestData() {
@@ -38,19 +38,32 @@ func (c *Configuration) Update(conf *data.Configuration) {
 	c.Data[conf.Code] = *conf
 }
 
-func (c *Configuration) FindByCode(code data.CodeIdentity, conf *data.Configuration) (err error) {
+func (c *Configuration) GetById(id data.ConfigurationId, conf *data.Configuration) (err error) {
+	c.RLock()
+	defer c.RUnlock()
+
+	for _, c := range c.Data {
+		if c.Id == id {
+			*conf = c
+			return
+		}
+	}
+	err = errors.New("not found")
+	return
+}
+
+func (c *Configuration) GetByCode(code data.CodeId, conf *data.Configuration) (err error) {
 	c.RLock()
 	defer c.RUnlock()
 
 	var ok bool
-	*conf, ok = c.Data[code]
-	if !ok {
+	if *conf, ok = c.Data[code]; !ok {
 		err = errors.New("not exists")
 	}
 	return
 }
 
-func (c *Configuration) FindByCodes(codes []data.CodeIdentity, buf []data.Configuration) (err error) {
+func (c *Configuration) GetByCodes(codes []data.CodeId, buf []data.Configuration) (err error) {
 	c.RLock()
 	defer c.RUnlock()
 

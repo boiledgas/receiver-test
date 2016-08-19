@@ -8,20 +8,20 @@ import (
 
 type ContextProvider struct {
 	sync.RWMutex
-	contexts map[data.CodeIdentity]*Context // словарь подключений
+	contexts map[data.CodeId]*Context // словарь подключений
 
-	Cache   *cache.Configuration // кэш конфигураций
-	Storage *Storage             // хранилище данных
+	Cache   *cache.Configuration      // кэш конфигураций
+	Storage *Storage                  // хранилище данных
 }
 
 // Регистрация устройства
-func (p *ContextProvider) Register(code data.CodeIdentity, context *Context) {
+func (p *ContextProvider) Register(code data.CodeId, context *Context) {
 	if p.contexts == nil {
-		p.contexts = make(map[data.CodeIdentity]*Context)
+		p.contexts = make(map[data.CodeId]*Context)
 	}
 
 	if !context.static || !context.init {
-		if err := p.Cache.Get(code, &context.Config); err != nil {
+		if err := p.Cache.GetByCode(code, &context.Config); err != nil {
 			panic(err)
 		}
 		context.init = true
@@ -40,7 +40,7 @@ func (p *ContextProvider) Register(code data.CodeIdentity, context *Context) {
 }
 
 // Отключение устройства
-func (p *ContextProvider) Close(code data.CodeIdentity) {
+func (p *ContextProvider) Close(code data.CodeId) {
 	if p.contexts == nil {
 		return
 	}

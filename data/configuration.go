@@ -4,21 +4,22 @@ import (
 	"receiver/errors"
 )
 
-type CodeIdentity string
+type CodeId string
+
+type ConfigurationId interface{}
 
 type Configuration struct {
-	Id   interface{} // както побороть
-	ETag uint64
+	Id         ConfigurationId     // configuration identity
+	ETag       uint64              // modified hash
 
-	Output     string
-	Code       CodeIdentity
-	Modules    map[uint16]Module
-	Properties map[uint16]Property
+	Code       CodeId              // code
+	Modules    map[uint16]Module   // modules
+	Properties map[uint16]Property // properties
 }
 
 type Module struct {
 	Id   uint16
-	Code CodeIdentity
+	Code CodeId
 	Name string
 }
 
@@ -36,7 +37,7 @@ func (d *Configuration) Module(m Module) (id uint16, err error) {
 	return
 }
 
-func (d *Configuration) Property(name CodeIdentity, p Property) (id uint16, err error) {
+func (d *Configuration) Property(name CodeId, p Property) (id uint16, err error) {
 	if d.Modules == nil {
 		err = errors.New("module not exist")
 		return
@@ -59,7 +60,7 @@ func (d *Configuration) Property(name CodeIdentity, p Property) (id uint16, err 
 	return
 }
 
-func (d *Configuration) GetProperty(module CodeIdentity, name CodeIdentity) (result Property, ok bool) {
+func (d *Configuration) GetProperty(module CodeId, name CodeId) (result Property, ok bool) {
 	ok = false
 	if m, mok := d.GetModule(module); mok {
 		result, ok = d.getProperty(m.Id, name)
@@ -67,7 +68,7 @@ func (d *Configuration) GetProperty(module CodeIdentity, name CodeIdentity) (res
 	return
 }
 
-func (d *Configuration) GetModule(name CodeIdentity) (result Module, ok bool) {
+func (d *Configuration) GetModule(name CodeId) (result Module, ok bool) {
 	ok = false
 	if d.Modules == nil {
 		return
@@ -81,7 +82,7 @@ func (d *Configuration) GetModule(name CodeIdentity) (result Module, ok bool) {
 	return
 }
 
-func (d *Configuration) getProperty(id uint16, name CodeIdentity) (result Property, ok bool) {
+func (d *Configuration) getProperty(id uint16, name CodeId) (result Property, ok bool) {
 	ok = false
 	if d.Properties == nil {
 		return

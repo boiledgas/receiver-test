@@ -93,9 +93,9 @@ func createParserFactory(name string) (factory logic.ParserFactory, err error) {
 		err = errors.New("not found")
 		return
 	}
-	factory = func() logic.Parser {
+	factory = func() logic.ReadParser {
 		instance := reflect.New(logic.ParserRegistry[name]).Interface()
-		return instance.(logic.Parser)
+		return instance.(logic.ReadParser)
 	}
 	return
 }

@@ -35,6 +35,7 @@
       <root url="file://C:/Go/src/gopkg.in" />
       <root url="file://C:/Go/src/bytes" />
       <root url="file://C:/Go/src/time" />
+      <root url="file://$PROJECT_DIR$/../Challenge" />
       <root url="file://$PROJECT_DIR$/../structure" />
       <root url="file://$PROJECT_DIR$/../gosched.git" />
       <root url="file://$PROJECT_DIR$/../test" />
@@ -90,6 +91,7 @@
       <root url="file://C:/Go/src/gopkg.in" />
       <root url="file://C:/Go/src/bytes" />
       <root url="file://C:/Go/src/time" />
+      <root url="file://$PROJECT_DIR$/../Challenge" />
       <root url="file://$PROJECT_DIR$/../structure" />
       <root url="file://$PROJECT_DIR$/../gosched.git" />
       <root url="file://$PROJECT_DIR$/../test" />

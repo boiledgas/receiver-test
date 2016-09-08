@@ -5,8 +5,8 @@ import (
 	"github.com/boiledgas/receiver-test/data"
 	"github.com/boiledgas/receiver-test/data/cache"
 	"github.com/boiledgas/receiver-test/data/repository"
+	rec "github.com/boiledgas/receiver-test/receiver"
 	_ "github.com/boiledgas/receiver-test/parser"
-	"github.com/boiledgas/receiver-test/receiver"
 	"github.com/go-yaml/yaml"
 	"io/ioutil"
 	"log"
@@ -33,9 +33,9 @@ func Serve() {
 		Repository: &repository,
 		Index:      make(map[data.CodeId]data.ConfId),
 		Cache:      make(map[data.ConfId]data.Conf)}
-	contextProvider := &receiver.ContextProvider{
+	contextProvider := &rec.ContextProvider{
 		Cache:    cache,
-		Contexts: make(map[data.CodeId]*receiver.Context),
+		Contexts: make(map[data.CodeId]*rec.Context),
 	}
 	cache.UpdateFunc = contextProvider.UpdateConfiguration
 

@@ -16,7 +16,7 @@ import (
 func Serve() {
 	var err error
 	var bytes []byte
-	if bytes, err = ioutil.ReadFile("config.yaml"); err != nil {
+	if bytes, err = ioutil.ReadFile("/go/src/github.com/boiledgas/receiver-test/config.yaml"); err != nil {
 		log.Printf("read file: %v", err)
 		return
 	}

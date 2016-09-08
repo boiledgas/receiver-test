@@ -16,8 +16,8 @@ import (
 func Serve() {
 	var err error
 	var bytes []byte
-	if bytes, err = ioutil.ReadFile(".\\config.yaml"); err != nil {
-		log.Print("read file: %v", err)
+	if bytes, err = ioutil.ReadFile("config.yaml"); err != nil {
+		log.Printf("read file: %v", err)
 		return
 	}
 	cfg := receiver.Config{} // heap

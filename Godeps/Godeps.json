@@ -8,7 +8,7 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/boiledgas/protocol",
-			"Rev": "e489719cd2b0c4be14e578138b68ba0ab821741e"
+			"Rev": "cba48b0adf3fcae20ea1bf1b6b4d8952f5f270f1"
 		},
 		{
 			"ImportPath": "github.com/go-yaml/yaml",

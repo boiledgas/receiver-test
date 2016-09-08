@@ -7,7 +7,7 @@ import (
 
 const (
 	TAG_NAME     string = "github.com/boiledgas/receiver-test"
-	TAG_PROTOCOL string = "protocol"
+	TAG_PROTOCOL string = "github.com/boiledgas/protocol"
 	TAG_CLIENT   string = "client"
 )
 

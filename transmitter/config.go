@@ -14,7 +14,7 @@ func (t *Config) Validate() (err error) {
 		return errors.New("server is not defined")
 	}
 	if len(t.Protocol) == 0 {
-		return errors.New("protocol is not defined")
+		return errors.New("github.com/boiledgas/protocol is not defined")
 	}
 	if len(t.Source) == 0 {
 		return errors.New("source is not defined")

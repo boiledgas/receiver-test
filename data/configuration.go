@@ -1,16 +1,18 @@
 package data
 
 import (
-	"receiver/errors"
+	"errors"
+	"fmt"
+	"receiver/data/values"
 )
 
 type CodeId string
 
-type ConfigurationId interface{}
+type ConfId interface{}
 
-type Configuration struct {
-	Id         ConfigurationId     // configuration identity
-	ETag       uint64              // modified hash
+type Conf struct {
+	Id   ConfId // configuration identity
+	ETag uint64 // modified hash
 
 	Code       CodeId              // code
 	Modules    map[uint16]Module   // modules
@@ -23,7 +25,7 @@ type Module struct {
 	Name string
 }
 
-func (d *Configuration) Module(m Module) (id uint16, err error) {
+func (d *Conf) Module(m Module) (id uint16, err error) {
 	if d.Modules == nil {
 		d.Modules = make(map[uint16]Module)
 	}
@@ -37,7 +39,7 @@ func (d *Configuration) Module(m Module) (id uint16, err error) {
 	return
 }
 
-func (d *Configuration) Property(name CodeId, p Property) (id uint16, err error) {
+func (d *Conf) Property(name CodeId, p Property) (id uint16, err error) {
 	if d.Modules == nil {
 		err = errors.New("module not exist")
 		return
@@ -60,7 +62,7 @@ func (d *Configuration) Property(name CodeId, p Property) (id uint16, err error)
 	return
 }
 
-func (d *Configuration) GetProperty(module CodeId, name CodeId) (result Property, ok bool) {
+func (d *Conf) GetProperty(module CodeId, name CodeId) (result Property, ok bool) {
 	ok = false
 	if m, mok := d.GetModule(module); mok {
 		result, ok = d.getProperty(m.Id, name)
@@ -68,7 +70,18 @@ func (d *Configuration) GetProperty(module CodeId, name CodeId) (result Property
 	return
 }
 
-func (d *Configuration) GetModule(name CodeId) (result Module, ok bool) {
+func (d *Conf) GetPropertyByType(dataType values.DataType, p *Property) (err error) {
+	for _, property := range d.Properties {
+		if property.Type == dataType {
+			*p = property
+			return
+		}
+	}
+	err = errors.New(fmt.Sprintf("property (%v) not found", dataType))
+	return
+}
+
+func (d *Conf) GetModule(name CodeId) (result Module, ok bool) {
 	ok = false
 	if d.Modules == nil {
 		return
@@ -82,7 +95,7 @@ func (d *Configuration) GetModule(name CodeId) (result Module, ok bool) {
 	return
 }
 
-func (d *Configuration) getProperty(id uint16, name CodeId) (result Property, ok bool) {
+func (d *Conf) getProperty(id uint16, name CodeId) (result Property, ok bool) {
 	ok = false
 	if d.Properties == nil {
 		return

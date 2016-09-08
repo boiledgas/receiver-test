@@ -1,9 +1,7 @@
 package transmitter
 
-type Source struct {
-	Transmitter *Transmitter
-}
+import "receiver/source"
 
-func (s *Source) GetChan() {
-
+type Source interface {
+	SetBinder(source.Binder) (err error)
 }

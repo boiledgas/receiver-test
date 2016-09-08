@@ -1,9 +1,25 @@
 instance: my-instance
 receiver:
-  Test1:
-    parser: Test
+  Test:
+    parser: Telematics
     protocol: tcp
     host: localhost
     port: 777
-    timeout: 10
+    timeout: 5
+    listeners: 4
+transmitter:
+  Test:
+    parser: Telematics
+    protocol: tcp
+    server: localhost:777
+    source: Test
+source:
+  Test:
+    type: random
+    ids:
+    - 1
+metrics:
+  host: http://localhost:8086
+  database: metrics
+
 

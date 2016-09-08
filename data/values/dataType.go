@@ -9,7 +9,7 @@ const (
 func (t DataType) GetValue() (v interface{}) {
 	switch t {
 	case DATATYPE_GPS:
-		v = gpsValue{}
+		v = Gps{}
 	}
 	return
 }

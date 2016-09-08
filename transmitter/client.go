@@ -1,32 +1,25 @@
 package transmitter
 
 import (
+	"errors"
+	"receiver/data"
 	"log"
 	"net"
-	"receiver/cache"
-	"receiver/config"
-	"receiver/data"
-	"receiver/logic"
+	"runtime/debug"
 	"sync"
 )
 
 type Client struct {
+	sync.Mutex
 	sync.WaitGroup
 
-	Config config.Transmitter
-	Parser logic.WriteParser
-	Cache  *cache.Configuration
+	Config  Config
+	Factory ParserFactory
 
+	state   bool
 	Conn    net.Conn
-	Records chan []*data.Record
-}
-
-func (c *Client) Disconnect() (err error) {
-	if c.Conn != nil {
-		err = c.Conn.Close()
-		c.Conn = nil
-	}
-	return
+	Conf    data.Conf
+	Records chan []data.Record
 }
 
 func (c *Client) Connect() (err error) {
@@ -39,42 +32,83 @@ func (c *Client) Connect() (err error) {
 }
 
 func (c *Client) Start() (err error) {
-	if err = c.Connect(); err != nil {
+	c.Lock()
+	defer c.Unlock()
+
+	if c.state {
+		err = errors.New("already run")
 		return
 	}
-	go c.HandleClient()
+	go c.handleClient()
+	c.state = true
 	return
 }
 
 func (c *Client) Stop() (err error) {
+	c.Lock()
+	defer c.Unlock()
+
+	if !c.state {
+		err = errors.New("not running")
+		return
+	}
+	err = c.stop()
+	c.state = false
+	return
+}
+
+func (c *Client) Restart() (err error) {
+	c.Lock()
+	defer c.Unlock()
+
+	if !c.state {
+		return
+	}
+	if err = c.stop(); err != nil {
+		return
+	}
+	go c.handleClient()
+	return
+}
+
+func (c *Client) stop() (err error) {
 	if c.Conn != nil {
 		err = c.Conn.Close()
+		c.Conn = nil
 	}
 	return
 }
 
-func (c *Client) HandleClient() {
+func (c *Client) handleClient() {
 	defer func() {
 		if err := recover(); err != nil {
-			log.Println(err) // fatal error
-			c.Stop()
-			c.Start()
+			log.Printf("transmitter client: [%v] %v", c.Conf.Id, err)
+			debug.PrintStack()
+			if err = c.Restart(); err != nil {
+				log.Printf("transmitter client: restart %v", err)
+			}
 		}
 	}()
 
+	log.Printf("transmitter client: started %v", c.Conf.Code)
+	defer log.Printf("transmitter client: stoped %v", c.Conf.Code)
+
+	if err := c.Connect(); err != nil {
+		panic(err)
+	}
+
+	var parser Parser
+	var err error
+	if parser, err = c.Factory(); err != nil {
+		panic(err)
+	}
 	for recs := range c.Records {
 		if len(recs) == 0 {
 			continue
 		}
 
-		var configuration data.Configuration
-		if err := c.Cache.GetById(recs[0].DeviceId, &configuration); err != nil {
-			log.Println(err)
-			continue
-		}
-
-		if err := c.Parser.Parse(c.Conn, configuration, recs); err != nil {
-			log.Println(err)
+		if err = parser.Parse(c.Conn, &c.Conf, recs); err != nil {
+			panic(err)
 		}
 	}
 }

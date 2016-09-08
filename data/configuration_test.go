@@ -5,7 +5,7 @@ import (
 )
 
 func Test_Device_Success(t *testing.T) {
-	d := Configuration{Code: "test12345"}
+	d := Conf{Code: "test12345"}
 	m1 := Module{Code: "mod1"}
 	if mid, err := d.Module(m1); err != nil {
 		t.Errorf("error create module %v", err)

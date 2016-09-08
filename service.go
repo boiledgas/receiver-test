@@ -1,12 +1,18 @@
 package receiver
 
 import (
-	"receiver/logic"
-	"receiver/errors"
-	"receiver/tcp"
-	"reflect"
+	"errors"
+	"receiver/data"
+	"receiver/data/cache"
+	"receiver/metrics"
+	"receiver/receiver"
+	"receiver/receiver/tcp"
+	"receiver/source"
+	"receiver/transmitter"
+	"log"
+	"os"
 	"sync"
-	"receiver/config"
+	"time"
 )
 
 type client struct {
@@ -15,32 +21,77 @@ type client struct {
 }
 
 type Service struct {
-	Config   config.Service
-	Provider *logic.ContextProvider
+	Config   Config
+	Provider *receiver.ContextProvider
+	Cache    *cache.Configuration
 
-	receivers_lock sync.RWMutex              // блокировка словаря слушателей
-	receivers      map[string]logic.Receiver // словарь слушателей
+	receivers_lock sync.RWMutex                  // блокировка словаря слушателей
+	receivers      map[string]Receiver           // словарь слушателей
+	transmitters   map[string]Transmitter        // словарь передатчиков
+	sources        map[string]transmitter.Source // словарь источников для передатчиков
 }
 
-func (s *Service) ListenAndServe() {
+func (s *Service) ListenAndServe() (err error) {
+	log.Printf("service: starting serve")
+	defer log.Printf("service: started serve")
+
+	go metrics.InfluxDb(time.Second*1, s.Config.Metrics)
+	defer func() {
+		if err != nil {
+			os.Exit(1)
+		}
+	}()
 	s.receivers_lock.Lock()
 	defer s.receivers_lock.Unlock()
-	s.receivers = make(map[string]logic.Receiver)
+
+	s.receivers = make(map[string]Receiver)
+	var r Receiver
 	for name, cfg := range s.Config.Receiver {
-		if receiver, err := s.initReceiver(name, cfg); err == nil {
-			receiver.Start()
-			s.receivers[name] = receiver
+		if r, err = s.initReceiver(name, cfg); err == nil {
+			if err = r.Start(); err != nil {
+				return
+			}
+			s.receivers[name] = r
 		} else {
-			panic(err)
+			return err
 		}
 	}
+
+	s.sources = make(map[string]transmitter.Source)
+	var source transmitter.Source
+	for name, cfg := range s.Config.Source {
+		if source, err = s.initSource(name, cfg); err == nil {
+			s.sources[name] = source
+		} else {
+			return err
+		}
+	}
+
+	s.transmitters = make(map[string]Transmitter)
+	var t Transmitter
+	for name, cfg := range s.Config.Transmitter {
+		if t, err = s.initTransmitter(name, cfg); err == nil {
+			if err = t.Start(); err != nil {
+				return err
+			}
+
+			s.transmitters[name] = t
+		} else {
+			return err
+		}
+	}
+
+	return
 }
 
 func (s *Service) Start(name string) (err error) {
+	log.Printf("service: starting %v", name)
+	defer log.Printf("service: started %v", name)
+
 	s.receivers_lock.Lock()
 	defer s.receivers_lock.Unlock()
 
-	var receiver logic.Receiver
+	var receiver Receiver
 	var ok bool
 	if receiver, ok = s.receivers[name]; !ok {
 		if cfg, ok := s.Config.Receiver[name]; ok {
@@ -60,6 +111,8 @@ func (s *Service) Start(name string) (err error) {
 }
 
 func (s *Service) Stop(name string) (err error) {
+	log.Printf("service: stoping %v", name)
+	defer log.Printf("service: stoped %v", name)
 	if receiver, ok := s.receivers[name]; ok {
 		if receiver.IsActive() {
 			receiver.Stop()
@@ -70,17 +123,22 @@ func (s *Service) Stop(name string) (err error) {
 	return
 }
 
-func (s *Service) initReceiver(name string, config config.Receiver) (receiver logic.Receiver, err error) {
-	var factory logic.ParserFactory
+func (s *Service) initReceiver(name string, config receiver.Config) (result Receiver, err error) {
+	var factory receiver.ParserFactory
+	if factory, err = receiver.Factory.Create(config.Parser); err != nil {
+		return
+	}
+	var metrics *receiver.ConnectionsMetric
+	if metrics, err = receiver.NewConnectionsMetric(name, config.Parser); err != nil {
+		return
+	}
 	switch config.Protocol {
 	case "tcp":
-		if factory, err = createParserFactory(config.Parser); err != nil {
-			return
-		}
-		receiver = &tcp.Receiver{
+		result = &tcp.Receiver{
 			Config:   config,
 			Factory:  factory,
 			Provider: s.Provider,
+			Metrics:  metrics,
 		}
 	case "udp":
 		err = errors.New("not found")
@@ -88,14 +146,36 @@ func (s *Service) initReceiver(name string, config config.Receiver) (receiver lo
 	return
 }
 
-func createParserFactory(name string) (factory logic.ParserFactory, err error) {
-	if _, ok := logic.ParserRegistry[name]; !ok {
-		err = errors.New("not found")
+func (s *Service) initSource(name string, config source.Config) (result transmitter.Source, err error) {
+	switch config.Type {
+	case "random":
+		result = &source.Random{
+			Cache:   s.Cache,
+			Clients: make(map[data.CodeId]source.RandomClient),
+			Config:  config,
+		}
+	default:
+		err = errors.New("not founc source type")
+	}
+	return
+}
+
+func (s *Service) initTransmitter(name string, config transmitter.Config) (result Transmitter, err error) {
+	var factory transmitter.ParserFactory
+	if factory, err = transmitter.Factory.Create(config.Parser); err != nil {
 		return
 	}
-	factory = func() logic.ReadParser {
-		instance := reflect.New(logic.ParserRegistry[name]).Interface()
-		return instance.(logic.ReadParser)
+	result = &transmitter.SingleClientTransmitter{
+		Config:  config,
+		Cache:   s.Cache,
+		Clients: make(map[data.CodeId]*transmitter.Client),
+		Factory: factory,
+	}
+	if s, ok := s.sources[config.Source]; !ok {
+		err = errors.New("source not found")
+		return
+	} else {
+		result.SetSource(s)
 	}
 	return
 }

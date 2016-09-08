@@ -1,6 +1,6 @@
 {
 	"ImportPath": "receiver",
-	"GoVersion": "go1.6",
+	"GoVersion": "go1.7",
 	"GodepVersion": "v74",
 	"Packages": [
 		"./..."
@@ -8,11 +8,16 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/boiledgas/protocol",
-			"Rev": "7e44208e38cea234d36b756530c0bce0e9f1d44d"
+			"Rev": "e489719cd2b0c4be14e578138b68ba0ab821741e"
 		},
 		{
 			"ImportPath": "github.com/go-yaml/yaml",
 			"Rev": "e4d366fc3c7938e2958e662b4258c7a89e1f0e3e"
+		},
+		{
+			"ImportPath": "github.com/influxdata/influxdb",
+			"Comment": "v1.0.0-rc2-63-gc6763fc",
+			"Rev": "c6763fc0aec7fe6964c7a5ab3b690f4b0af58697"
 		}
 	]
 }

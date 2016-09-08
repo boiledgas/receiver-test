@@ -1,8 +1,8 @@
 package cache
 
 import (
-	"receiver/data"
-	"receiver/data/repository"
+	"github.com/boiledgas/receiver-test/data"
+	"github.com/boiledgas/receiver-test/data/repository"
 	"testing"
 )
 

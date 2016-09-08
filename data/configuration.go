@@ -3,7 +3,7 @@ package data
 import (
 	"errors"
 	"fmt"
-	"receiver/data/values"
+	"github.com/boiledgas/receiver-test/data/values"
 )
 
 type CodeId string

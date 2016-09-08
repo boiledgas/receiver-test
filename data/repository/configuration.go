@@ -2,8 +2,8 @@ package repository
 
 import (
 	"errors"
-	"receiver/data"
-	"receiver/data/values"
+	"github.com/boiledgas/receiver-test/data"
+	"github.com/boiledgas/receiver-test/data/values"
 	"sync"
 )
 

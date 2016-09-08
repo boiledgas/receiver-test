@@ -1,7 +1,7 @@
 package transmitter
 
 import (
-	"receiver/data"
+	"github.com/boiledgas/receiver-test/data"
 	"io"
 )
 

@@ -2,8 +2,8 @@ package transmitter
 
 import (
 	"errors"
-	"receiver/data"
-	"receiver/data/cache"
+	"github.com/boiledgas/receiver-test/data"
+	"github.com/boiledgas/receiver-test/data/cache"
 	"log"
 	"sync"
 )

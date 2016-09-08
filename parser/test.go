@@ -2,8 +2,8 @@ package parser
 
 import (
 	"encoding/binary"
-	"receiver/data/values"
-	"receiver/receiver"
+	"github.com/boiledgas/receiver-test/data/values"
+	"github.com/boiledgas/receiver-test/receiver"
 	"io"
 	"reflect"
 	"time"

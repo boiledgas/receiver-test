@@ -1,12 +1,12 @@
 package main
 
 import (
-	"receiver/data"
-	"receiver/data/cache"
-	"receiver/data/repository"
-	_ "receiver/parser"
-	"receiver/source"
-	"receiver/transmitter"
+	"github.com/boiledgas/receiver-test/data"
+	"github.com/boiledgas/receiver-test/data/cache"
+	"github.com/boiledgas/receiver-test/data/repository"
+	_ "github.com/boiledgas/receiver-test/parser"
+	"github.com/boiledgas/receiver-test/source"
+	"github.com/boiledgas/receiver-test/transmitter"
 	"log"
 	"time"
 )
@@ -45,7 +45,7 @@ func main() {
 
 	receiver := Receiver{Port: 777}
 	if err := receiver.Start(); err != nil {
-		log.Printf("receiver: %v", err)
+		log.Printf("github.com/boiledgas/receiver-test: %v", err)
 		return
 	}
 

@@ -1,6 +1,6 @@
 package data
 
-import "receiver/data/values"
+import "github.com/boiledgas/receiver-test/data/values"
 
 type Property struct {
 	Id       uint16

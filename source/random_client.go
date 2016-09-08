@@ -1,7 +1,7 @@
 package source
 
 import (
-	"receiver/data"
+	"github.com/boiledgas/receiver-test/data"
 	"log"
 	"runtime"
 	"sync"

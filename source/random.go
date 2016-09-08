@@ -2,9 +2,9 @@ package source
 
 import (
 	"errors"
-	"receiver/data"
-	"receiver/data/cache"
-	"receiver/data/values"
+	"github.com/boiledgas/receiver-test/data"
+	"github.com/boiledgas/receiver-test/data/cache"
+	"github.com/boiledgas/receiver-test/data/values"
 	"log"
 	"sync"
 	"time"

@@ -1,12 +1,12 @@
 package receiver
 
 import (
-	"receiver/data"
-	"receiver/metrics"
+	"github.com/boiledgas/receiver-test/data"
+	"github.com/boiledgas/receiver-test/metrics"
 )
 
 const (
-	TAG_NAME     string = "receiver"
+	TAG_NAME     string = "github.com/boiledgas/receiver-test"
 	TAG_PROTOCOL string = "protocol"
 	TAG_CLIENT   string = "client"
 )

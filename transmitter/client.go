@@ -2,7 +2,7 @@ package transmitter
 
 import (
 	"errors"
-	"receiver/data"
+	"github.com/boiledgas/receiver-test/data"
 	"log"
 	"net"
 	"runtime/debug"

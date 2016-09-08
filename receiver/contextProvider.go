@@ -1,8 +1,8 @@
 package receiver
 
 import (
-	"receiver/data"
-	"receiver/data/cache"
+	"github.com/boiledgas/receiver-test/data"
+	"github.com/boiledgas/receiver-test/data/cache"
 	"sync"
 )
 

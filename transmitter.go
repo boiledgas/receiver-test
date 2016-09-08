@@ -1,8 +1,8 @@
 package receiver
 
 import (
-	"receiver/data"
-	"receiver/transmitter"
+	"github.com/boiledgas/receiver-test/data"
+	"github.com/boiledgas/receiver-test/transmitter"
 )
 
 type Transmitter interface {

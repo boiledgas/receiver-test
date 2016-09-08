@@ -2,10 +2,10 @@ package parser
 
 import (
 	"errors"
-	"receiver/data"
-	"receiver/data/values"
-	"receiver/receiver"
-	"receiver/transmitter"
+	"github.com/boiledgas/receiver-test/data"
+	"github.com/boiledgas/receiver-test/data/values"
+	"github.com/boiledgas/receiver-test/receiver"
+	"github.com/boiledgas/receiver-test/transmitter"
 	"io"
 	"log"
 	"github.com/boiledgas/protocol/telematics"

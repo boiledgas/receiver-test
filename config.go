@@ -1,10 +1,10 @@
 package receiver
 
 import (
-	"receiver/metrics"
-	"receiver/receiver"
-	"receiver/source"
-	"receiver/transmitter"
+	"github.com/boiledgas/receiver-test/metrics"
+	"github.com/boiledgas/receiver-test/receiver"
+	"github.com/boiledgas/receiver-test/source"
+	"github.com/boiledgas/receiver-test/transmitter"
 )
 
 type Config struct {

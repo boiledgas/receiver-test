@@ -1,12 +1,12 @@
 package main
 
 import (
-	"receiver"
-	"receiver/data"
-	"receiver/data/cache"
-	"receiver/data/repository"
-	_ "receiver/parser"
-	"receiver/receiver"
+	"github.com/boiledgas/receiver-test"
+	"github.com/boiledgas/receiver-test/data"
+	"github.com/boiledgas/receiver-test/data/cache"
+	"github.com/boiledgas/receiver-test/data/repository"
+	_ "github.com/boiledgas/receiver-test/parser"
+	"github.com/boiledgas/receiver-test/receiver"
 	"github.com/go-yaml/yaml"
 	"io/ioutil"
 	"log"

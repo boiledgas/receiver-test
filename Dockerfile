@@ -8,6 +8,5 @@ ENV PATH=$PATH:/go/bin
 RUN go get github.com/tools/godep && go get github.com/boiledgas/receiver-test
 RUN cd /go/src/github.com/boiledgas/receiver-test && godep restore
 RUN cd /go/src/github.com/boiledgas/receiver-test && go install github.com/boiledgas/receiver-test/main
-RUN cp /go/src/github.com/boiledgas/receiver-test/config.yaml /go/bin
 
-CMD ["cd /go/bin && main"]
+CMD ["/go/bin/main"]
